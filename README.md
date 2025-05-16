@@ -23,6 +23,7 @@ This project is a **hybrid calculator** built with **Node.js**, offering both a 
 
 ---
 
+```bash
 ## 📂 Project Structure
 calculator-project/
 ├── models/
