@@ -7,6 +7,14 @@ const readline = require('readline').createInterface({
     output: process.stdout
 });
 
+// Import mongoose for MongoDB connection
+const mongoose = require('mongoose');
+
+
+// Import model for database management
+const Calculation = require('./models/calculation.js');
+
+
 // Create Express app
 const app = express();
 
@@ -127,28 +135,57 @@ function calculate(num1, num2, operation) {
 function UserPrompt() {
     readline.question('Enter the first number: ', (num1) => {
         readline.question('Enter the second number: ', (num2) => {
-            readline.question('Choose operation (add, subtract, multiply, divide): ', (operation) => {
+            readline.question('Choose operation (add, subtract, multiply, divide):\n', (operation) => {
                 const n1 = parseFloat(num1);
                 const n2 = parseFloat(num2);
                 if (isNaN(n1) || isNaN(n2)) {
                     console.log('❌ Invalid number input.\n');
                     return UserPrompt();
                 }
+                const ValidOperation = ['add', 'subtract', 'multiply', 'divide'];
+                if (!ValidOperation.includes(operation)) {
+                    console.log('❌ Invalid operation. Please choose add, subtract, multiply, or divide.\n');
+                    return UserPrompt();
+                }
                 const result = calculate(n1, n2, operation);
                 lastCalculation = { num1: n1, num2: n2, operation, result };
                 console.log(`✅ Result: ${result}\n`);
-                // Trigger page reload by printing a message
-                console.log("New calculation completed! Open the browser to see the updated result.");
-                UserPrompt(); // Loop again
-            });
+
+                // Printing message to the console to indicate that the calculation is done
+                console.log("🖥️ Calculation completed! Open the browser to see the updated result.");
+                const newCalculation = new Calculation({
+                    num1: n1,
+                    num2: n2,
+                    operation,
+                    result
+                });
+
+                newCalculation.save()
+                    .then(() => {
+                        console.log('🗃️ Calculation saved to Database');
+                        UserPrompt(); // Loop again AFTER save is done
+                    })
+                    .catch(err => {
+                        console.error('❌ Error saving calculation:', err);
+                        UserPrompt(); // Still continue prompting if error occurs
+                    });
+            }); 
         });
     });
 }
+// Connect to mongodb then start Express server
+mongoose.connect('mongodb://localhost:27017/calculatorDB')
+.then(() => {
+    console.log('✅ Connected to MongoDB');
 
-// Start Express server
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`🌐 Server is running on http://localhost:${PORT}`);
-    console.log(`🖥️ You can also try the calculator in this terminal:\n`);
-    UserPrompt(); // Start CLI calculator
+    // Start Express server only after DB is connected
+    const PORT = 3000;
+    app.listen(PORT, () => {
+        console.log(`🌐 Server is running on http://localhost:${PORT}`);
+        console.log(`🖥️ You can also try the calculator in this terminal:\n`);
+        UserPrompt(); // Start CLI calculator
+    });
+})
+.catch((err) => {
+    console.error('❌ MongoDB connection error:', err);
 });
