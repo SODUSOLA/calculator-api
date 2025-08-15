@@ -1,0 +1,23 @@
+{
+  "name": "calculator-api",
+  "version": "1.0.0",
+  "description": "A simple Express-based calculator API that performs basic arithmetic operations via both web and CLI interface.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"No test configured\""
+  },
+  "keywords": [
+    "calculator",
+    "express",
+    "api",
+    "nodejs",
+    "arithmetic"
+  ],
+  "author": "Odusola Oluwasemilore",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongoose": "^8.14.3"
+  }
+}
